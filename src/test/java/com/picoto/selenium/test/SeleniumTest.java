@@ -8,6 +8,8 @@ import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.List;
+import java.util.Random;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -29,10 +31,10 @@ public class SeleniumTest {
 	@BeforeClass
 	public static void init() {
 		// System.setProperty("webdriver.firefox.driver",
-		// "/home/jmgodino/Selenium/drivers/geckodriver");
+		// "${HOME}/Selenium/drivers/geckodriver");
 
-		File clientCertFile = new File("/home/jmgodino/Selenium/clientCert.p12");
-		char[] clientCertPassword = "xxx".toCharArray();
+		File clientCertFile = new File(System.getProperty("user.home")+"/Selenium/telemuno.pfx");
+		char[] clientCertPassword = "1234".toCharArray();
 		File serverCertFile = new File("src/test/java/server.crt");
 		File serverKeyFile = new File("src/test/java/server.key");
 
@@ -96,9 +98,9 @@ public class SeleniumTest {
 		driver.findElement(By.id("idape")).sendKeys("TELEMATICAS UNO CERT");
 		driver.findElement(By.id("idimp")).click();
 		driver.findElement(By.id("idimp")).sendKeys(Keys.CONTROL + "a");
-		driver.findElement(By.id("idimp")).sendKeys("3");
+		driver.findElement(By.id("idimp")).sendKeys(new Random().nextInt(5000)+","+new Random().nextInt(100));
 		driver.findElement(By.id("idiban")).click();
-		driver.findElement(By.id("idiban")).sendKeys("ES7921000813610123456789");
+		driver.findElement(By.id("idiban")).sendKeys("ES3899990000100000000000");
 		driver.findElement(By.id("CONF")).click();
 		driver.findElement(By.cssSelector(".conborde:nth-child(18) li:nth-child(1)")).click();
 		assertThat(
@@ -117,12 +119,20 @@ public class SeleniumTest {
 				is("89890001K"));
 		driver.findElement(By.id("check")).click();
 		driver.findElement(By.id("CONF")).click();
-		driver.findElement(By.cssSelector("#idUlAlertas > li")).click();
-		assertThat(driver.findElement(By.cssSelector("#idUlAlertas > li")).getText(), startsWith(
-				"La operación no se ha podido realizar. Respuesta de la Entidad Financiera: [99] Error técnico."));
-		driver.findElement(By.cssSelector(".AEAT_bloque_errores:nth-child(6)")).click();
-			assertThat(driver.findElement(By.cssSelector(".AEAT_bloque_errores:nth-child(6)")).getText(), is(
-				"Por causas ajenas a la AEAT, las entidades [Banco con problemas] no están presentado sus servicios de pago telemático correctamente. Desde la AEAT se les han notificado la incidencia y estamos a la espera de que las entidades afectadas solucionen el problema. Lamentamos la molestias que este problema pueda ocasionar. Puede optar por realizar el pago con una cuenta o tarjeta de otra Entidad Colaboradora de la AEAT."));
+		
+		assertThat(driver.findElement(By.cssSelector(".seccionSalida:nth-child(10)")).getText(), is("El pago ha sido realizado con éxito."));
+	    driver.findElement(By.cssSelector(".seccionSalida:nth-child(14)")).click();
+	    assertThat(driver.findElement(By.cssSelector(".seccionSalida:nth-child(14)")).getText(), is("Recuerde que obtener el justificante del pago no equivale a presentar la declaración para la que ha obtenido el NRC."));
+	    driver.findElement(By.cssSelector(".seccionSalida:nth-child(12)")).click();
+	    assertThat(driver.findElement(By.cssSelector(".seccionSalida:nth-child(12)")).getText(), startsWith("El NRC generado es: "));
+	    {
+	      List<WebElement> elements = driver.findElements(By.id("justBot"));
+	      assert(elements.size() > 0);
+	    }
+	    {
+	      List<WebElement> elements = driver.findElements(By.id("decl"));
+	      assert(elements.size() > 0);
+	    }		
 	}
 
 	@AfterClass
